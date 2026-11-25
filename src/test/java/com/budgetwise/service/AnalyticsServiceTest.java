@@ -1,5 +1,6 @@
 package com.budgetwise.service;
 
+import com.budgetwise.model.Budget;
 import com.budgetwise.model.Expense;
 import org.junit.jupiter.api.Test;
 
@@ -90,5 +91,31 @@ class AnalyticsServiceTest {
 
         assertEquals(Map.of(),
                 service.spendingByCategory(expenses, YearMonth.of(2026, 10)));
+    }
+
+    @Test
+    void calculateRemainingBudgetSubtractsOnlyExpensesFromBudgetMonth() {
+        Budget budget = new Budget(
+                YearMonth.of(2026, 10), new BigDecimal("500.00"));
+        List<Expense> expenses = List.of(
+                expense("120.00", LocalDate.of(2026, 10, 4), "Groceries"),
+                expense("30.00", LocalDate.of(2026, 10, 18), "Transport"),
+                expense("200.00", LocalDate.of(2026, 9, 25), "Other")
+        );
+
+        assertEquals(new BigDecimal("350.00"),
+                service.calculateRemainingBudget(budget, expenses));
+    }
+
+    @Test
+    void calculateRemainingBudgetCanBeNegativeWhenSpendingExceedsLimit() {
+        Budget budget = new Budget(
+                YearMonth.of(2026, 10), new BigDecimal("100.00"));
+        List<Expense> expenses = List.of(
+                expense("125.00", LocalDate.of(2026, 10, 10), "Groceries")
+        );
+
+        assertEquals(new BigDecimal("-25.00"),
+                service.calculateRemainingBudget(budget, expenses));
     }
 }
