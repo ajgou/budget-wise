@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,5 +38,28 @@ class AnalyticsServiceTest {
     @Test
     void calculateTotalReturnsZeroForEmptyExpenseList() {
         assertEquals(BigDecimal.ZERO, service.calculateTotal(List.of()));
+    }
+
+    @Test
+    void calculateMonthlySpendingIncludesOnlySelectedMonth() {
+        List<Expense> expenses = List.of(
+                expense("100.00", LocalDate.of(2026, 10, 2), "Groceries"),
+                expense("50.00", LocalDate.of(2026, 10, 15), "Transport"),
+                expense("999.00", LocalDate.of(2026, 9, 20), "Other"),
+                expense("200.00", LocalDate.of(2026, 11, 1), "Groceries")
+        );
+
+        assertEquals(new BigDecimal("150.00"),
+                service.calculateMonthlySpending(expenses, YearMonth.of(2026, 10)));
+    }
+
+    @Test
+    void calculateMonthlySpendingReturnsZeroWhenMonthHasNoExpenses() {
+        List<Expense> expenses = List.of(
+                expense("45.00", LocalDate.of(2026, 9, 20), "Groceries")
+        );
+
+        assertEquals(BigDecimal.ZERO,
+                service.calculateMonthlySpending(expenses, YearMonth.of(2026, 10)));
     }
 }
